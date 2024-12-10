@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QR Code Scanner</title>
+    <script src="https://cdn.jsdelivr.net/npm/jsqr/dist/jsQR.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 20px;
+        }
+        #video {
+            width: 100%;
+            max-width: 500px;
+            border: 1px solid black;
+        }
+        #message {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+        }
+        #scanner-container {
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: #28a745;
+            color: white;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+    </style>
+</head>
+<body>
+    <h1>QR Code Scanner</h1>
+    <div id="scanner-container">
+        <video id="video" autoplay></video>
+        <canvas id="canvas" style="display: none;"></canvas>
+        <div id="message">Waiting for QR code...</div>
+    </div>
+    <form id="qrForm" action="/welcome" method="post" style="display: none;">
+        <input type="hidden" id="code" name="code">
+        <button type="submit">Proceed</button>
+    </form>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const messageDiv = document.getElementById('message');
+        const canvasContext = canvas.getContext('2d');
+        const qrForm = document.getElementById('qrForm');
+        const codeInput = document.getElementById('code');
+
+        // Access user camera
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } })
+            .then(function (stream) {
+                video.srcObject = stream;
+                video.setAttribute('playsinline', true); // for iOS compatibility
+                video.play();
+                requestAnimationFrame(scanQRCode);
+            })
+            .catch(function (err) {
+                console.error("Error accessing camera: ", err);
+                messageDiv.textContent = "Failed to access camera.";
+            });
+
+        // Scan QR code
+        function scanQRCode() {
+            if (video.readyState === video.HAVE_ENOUGH_DATA) {
+                canvas.height = video.videoHeight;
+                canvas.width = video.videoWidth;
+                canvasContext.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                const imageData = canvasContext.getImageData(0, 0, canvas.width, canvas.height);
+                const code = jsQR(imageData.data, canvas.width, canvas.height);
+
+                if (code) {
+                    // QR code detected
+                    messageDiv.textContent = `QR Code Scanned: ${code.data}`;
+                    
+                    // Pass QR code to the hidden form and submit
+                    codeInput.value = code.data;
+                    qrForm.style.display = "block"; // Show the form
+                }
+            }
+            requestAnimationFrame(scanQRCode);
+        }
+    </script>
+</body>
+</html>

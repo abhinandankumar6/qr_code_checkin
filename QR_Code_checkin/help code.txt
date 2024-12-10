@@ -1,0 +1,37 @@
+# Code for help
+# Generate URL for QR code
+        hostname = socket.gethostname()
+        IPAddr = socket.gethostbyname(hostname)
+        unique_id = f"http://{IPAddr}:5000/welcome/{name}"
+		
+		
+if pd.isnull(users_df.loc[users_df['unique_id'] == code, 'count']).any():
+            users_df.loc[users_df['unique_id'] == code, 'id'] = 0
+        else:
+            users_df.loc[users_df['unique_id'] == code, 'count'] +=1
+        #Check if 'url' column is NaN and update it
+        if pd.isnull(users_df.loc[users_df['unique_id'] == code, 'unique_id']).any():
+            # Update URL for the specific record
+            users_df.loc[users_df['unique_id'] == code, 'unique_id'] = unique_id
+            users_df.loc[users_df['unique_id'] == code, 'email_status'] = 'Sent'
+            users_df.loc[users_df['unique_id'] == code, 'checkin_status'] = 'Registered'
+            users_df.loc[users_df['unique_id'] == code, 'count'] = 0
+        else:
+            users_df.loc[users_df['unique_id'] == code, 'checkin_status'] = 'Checked-In'
+            users_df.loc[users_df['unique_id'] == code, 'count'] +=1
+        # Saving changes to file
+        users_df.to_csv("users.csv", index=False)
+		
+@app.route('/generate')
+def generate():
+    emp_id_qr = user.iloc[0]['id']
+    #Generate QR code for User    
+    qr_code = qrcode.make(unique_id)
+    
+    # Convert the QR code to base64 for embedding in HTML
+    qr_image = BytesIO()
+    qr_code.save(qr_image, format='PNG')
+    
+    qr_code.save(f"qr_{emp_id_qr}.png")
+    qr_image_base64 = base64.b64encode(qr_image.getvalue()).decode('utf-8')
+    return "QR Codes generated."
