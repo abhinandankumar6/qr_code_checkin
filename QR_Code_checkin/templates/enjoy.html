@@ -45,15 +45,7 @@
             font-size: 24px;
         }
     </style>
-	<script>
-        window.onload = function () {
-			if (window.location.pathname === '/welcome') {
-			// Check if the current page is the last page
-				window.location.href = '/'; // Redirect to the index page
-    }
-};
-        };
-    </script>
+	
 </head>
 <body>
 	<div class="container">
@@ -65,5 +57,11 @@
         <button>Scan Again</button>
     </a>
 	</div>
+    <script>
+        if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
+            window.location.href = "/";
+        };
+
+    </script>
 </body>
 </html>

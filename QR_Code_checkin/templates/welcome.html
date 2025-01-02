@@ -62,5 +62,10 @@
             <button>Scan Again</button>
         </a>
     </div>
+    <script>
+        if (performance.navigation.type === performance.navigation.TYPE_RELOAD) {
+            window.location.href = "/";
+        };
+    </script>
 </body>
 </html>

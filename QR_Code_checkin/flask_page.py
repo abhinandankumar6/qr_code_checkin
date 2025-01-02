@@ -3,6 +3,7 @@ import pandas as pd
 import qrcode
 import random
 import base64
+import os
 from io import BytesIO
 import socket #to get ip address
 import logging
@@ -13,12 +14,13 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
+    logging.debug(f'App secret key from index page{os.urandom(24)}')
     return render_template('index.html')
     #return render_template('index_test.html')
 
 @app.route('/welcome', methods=['POST'])
 def welcome():
-    # Get the name from the form
+    # Get the code from the form
     code = request.form.get('code')
     if not code:
         return redirect(url_for('index'))
@@ -32,7 +34,7 @@ def welcome():
     logging.debug(f"Found user: {user['name']}")
     
     if not user.empty:
-        if user.iloc[0]['count'] < 100:
+        if user.iloc[0]['count'] < 2:
             # get name and unique id
             name = user.iloc[0]['name']
             unique_id=user.iloc[0]['unique_id']
@@ -59,6 +61,7 @@ def welcome():
         message = 'You are not a registered user.'
         image_url = 'https://memetemplates.in/uploads/1641347541.jpeg'
         return render_template('enjoy.html', heading=heading, message=message, image_url=image_url)
+        
     
 if __name__ == '__main__':
     app.run(debug=True)
